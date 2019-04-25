@@ -10,6 +10,9 @@ Add proxy
 
     ./create-env.sh proxy
 
+# Minkube
+
+    minikube start --cpus 2 --memory 6000
 
 ## Utils
 
