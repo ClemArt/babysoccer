@@ -8,7 +8,7 @@ Create machine
 
 Add proxy
 
-    <docker-machine start cmd> --engine-env HTTP_PROXY=$PROXY --engine-env HTTPS_PROXY=$PROXY --engine-env NO_PROXY=$NO_PROXY
+    ./create-env.sh proxy
 
 
 ## Utils
