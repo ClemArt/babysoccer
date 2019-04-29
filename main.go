@@ -14,7 +14,7 @@ func init() {
 }
 
 func main() {
-	dgraphAddresses := []string{"192.168.99.100:30744"}
+	dgraphAddresses := []string{"192.168.99.100:31090"}
 
 	clients := make([]api.DgraphClient, len(dgraphAddresses))
 
