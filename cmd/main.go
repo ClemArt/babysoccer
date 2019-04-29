@@ -14,23 +14,38 @@ func init() {
 }
 
 func main() {
-	dgraphAddresses := []string{"192.168.99.100:31090"}
+	dgraphAddresses := []string{"192.168.99.100:30980"}
+	mutationsToRun := []GraphMutation{
+		&InitSchemaMutation{},
+	}
 
-	clients := make([]api.DgraphClient, len(dgraphAddresses))
+	client := openDgraphConnection(dgraphAddresses)
 
-	for _, a := range dgraphAddresses {
+	// if err := dropAllData(client); err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	ctx := context.Background()
+	client.Alter(ctx, &api.Operation{
+		Schema: `
+			internals.migrations.executed: string @index(hash) @upsert .
+		`,
+	})
+	for _, m := range mutationsToRun {
+		if e := m.mutate(ctx, client); e != nil {
+			log.Fatal(e)
+		}
+	}
+}
+
+func openDgraphConnection(addresses []string) *dgo.Dgraph {
+	clients := make([]api.DgraphClient, len(addresses))
+
+	for _, a := range addresses {
 		clients = append(clients, newClient(a))
 	}
 
-	clusterCLient := newClusterCLient(clients)
-
-	if err := dropAllData(clusterCLient); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := setupSchema(clusterCLient); err != nil {
-		log.Fatal(err)
-	}
+ 	return newClusterCLient(clients)
 }
 
 func newClient(address string) api.DgraphClient {
@@ -59,14 +74,8 @@ func dropAllData(c *dgo.Dgraph) error {
 	return errors.Wrap(err, "Can't drop data in the database")
 }
 
-func setupSchema(c *dgo.Dgraph) error {
-	log.Info("Setup database schema")
-	err := c.Alter(context.Background(), &api.Operation{
-		Schema:`
-			name: string @index(hash) @upsert .
-			in_team: uid @reverse .
-			won_match: uid @count @reverse .
-		`,
-	})
-	return errors.Wrap(err, "Schema setup failed")
+// GraphMutation represents a single mutation to apply to the database on application startup
+// Each GraphMutation will be run exactly once and should not be modified after this first run
+type GraphMutation interface {
+	mutate(context.Context, *dgo.Dgraph) error
 }
