@@ -1,4 +1,4 @@
-module clemart.babysoccer
+module github.com/ClemArt/babysoccer
 
 go 1.12
 

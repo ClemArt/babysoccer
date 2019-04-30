@@ -5,8 +5,8 @@ import (
 	"github.com/dgraph-io/dgo"
 	"github.com/dgraph-io/dgo/protos/api"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 func init() {
@@ -32,7 +32,7 @@ func main() {
 		`,
 	})
 	for _, m := range mutationsToRun {
-		if e := m.mutate(ctx, client); e != nil {
+		if e := RunMutation(client, m); e != nil {
 			log.Fatal(e)
 		}
 	}
@@ -45,7 +45,7 @@ func openDgraphConnection(addresses []string) *dgo.Dgraph {
 		clients = append(clients, newClient(a))
 	}
 
- 	return newClusterCLient(clients)
+	return newClusterCLient(clients)
 }
 
 func newClient(address string) api.DgraphClient {
@@ -72,10 +72,4 @@ func dropAllData(c *dgo.Dgraph) error {
 	})
 
 	return errors.Wrap(err, "Can't drop data in the database")
-}
-
-// GraphMutation represents a single mutation to apply to the database on application startup
-// Each GraphMutation will be run exactly once and should not be modified after this first run
-type GraphMutation interface {
-	mutate(context.Context, *dgo.Dgraph) error
 }
